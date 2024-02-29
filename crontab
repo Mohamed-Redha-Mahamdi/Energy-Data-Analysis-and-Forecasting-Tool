@@ -1,0 +1,6 @@
+
+15 16 * * * /path/to/download_data.sh
+17 16 * * * /path/to/python3 /path/to/summary_to_mango_db.py
+31 16 * * * /path/to/run_both.sh >> /path/to/cron.log 2>&1
+
+

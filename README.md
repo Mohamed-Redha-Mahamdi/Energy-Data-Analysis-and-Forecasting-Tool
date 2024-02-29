@@ -1,104 +1,69 @@
-# Energy-Data-Analysis-and-Forecasting-Tool
-Energy Data Analysis and Forecasting Tool
+# Energy Data Analysis and Forecasting Tool
 
-Welcome to the Energy Data Analysis and Forecasting Tool project! This suite of scripts and applications is designed to automate the process of retrieving, summarizing, and analyzing energy consumption and production data, with a focus on providing insights through descriptive statistics and trend analysis.
+Welcome to the **Energy Data Analysis and Forecasting Tool** project! This repository is your one-stop destination for automating the retrieval, summarization, and analysis of energy consumption and production data. Our mission is to equip you with actionable insights through descriptive statistics and trend analysis, all within an intuitive suite of scripts and applications.
 
+## Overview
 
-#Overview
+Dive into a comprehensive toolkit that includes modules for data fetching from APIs, storage in a MongoDB database, and analysis and visualization via a Streamlit web application.
 
-The project consists of several components that work together to fetch data from an API, store it in a MongoDB database, and then analyze and visualize the data using a Streamlit web application.
+## Components
 
+### `download_data.sh`
+- **Purpose:** Automates the fetching of historical power breakdown data for France from the Electricity Map API and stores it as a JSON file.
+- **Operation:** Utilizes `curl` for API GET requests with an authorization token and saves the output as a timestamped file.
+- **Output:** JSON files in `/home/redha/retrieved-data/`.
 
-#Components
+### `summary_to_mango_db.py`
+- **Purpose:** Summarizes the latest JSON file and uploads the data to a MongoDB database.
+- **Operation:** Leverages `pandas` for JSON processing, data normalization, and relevant column selection before database insertion.
+- **Database Interaction:** Works with "mydatabase" and the "energy" collection in MongoDB.
 
-download_data.sh
+### `streamlit_script.py`
+- **Purpose:** Provides a user-friendly web interface for data visualization and trend analysis.
+- **Operation:** Fetches data from MongoDB and employs `streamlit` to create an interactive web application.
+- **Visualization Tools:** Uses `matplotlib`, `seaborn`, and `statsmodels` for detailed plotting and forecasting.
 
-Purpose: Fetches historical power breakdown data for France from the Electricity Map API and saves it as a JSON file.
+### `run_streamlit_app.sh`
+- **Purpose:** Launches the Streamlit web application in a browser.
+- **Operation:** Sets the `DISPLAY` variable, starts the Streamlit server, and opens the application in Firefox.
 
+### Crontab Entries
+- **Purpose:** Schedules script execution for automation.
+- **Timing:** 
+  - `download_data.sh` at 16:15 daily.
+  - `summary_to_mango_db.py` at 16:17 daily.
+  - `run_streamlit_app.sh` at 16:20 daily, with logs to `cron.log`.
 
-How it Works: Utilizes curl to make a GET request to the API with an authorization token and outputs the data to a file named with the current date and time.
+## Getting Started
 
+To begin:
 
-Output: JSON files are saved to /home/redha/retrieved-data/.
+1. **Clone the Repository:** Secure all scripts in their designated directories on your system.
+2. **Set Permissions:** Ensure scripts are executable with `chmod +x`.
+3. **Install Dependencies:** Verify installation of `curl`, `pandas`, `pymongo`, `streamlit`, `matplotlib`, `seaborn`, `statsmodels`, and MongoDB.
+4. **Execute Scripts:** Run scripts manually or via crontab.
+5. **Web Application Access:** Post-execution of `run_streamlit_app.sh`, visit `http://localhost:8501`.
 
+## Customization Instructions
 
-summary_to_mango_db.py
+Tailor the toolkit to your environment:
 
-Purpose: Processes the most recent JSON file, summarizes the data, and stores it in a MongoDB database.
+- **Script Paths:** Modify script paths to match your directory structure.
+- **Browser Settings:** Change the browser command in `run_streamlit_app.sh` if Firefox isn't your preference.
 
+## Prerequisites
 
-How it Works: Uses Pandas to read the JSON file, normalizes the data, selects relevant columns, and inserts the data into a MongoDB collection.
+- A Unix-like OS with Bash shell.
+- Python 3 with necessary libraries.
+- MongoDB
 
+## Important Notes
 
-Database Details: The script interacts with a MongoDB database named "mydatabase" and a collection named "energy".
+- Replace the demonstration API token in `download_data.sh` with a valid one.
+- Confirm MongoDB configuration for script database access.
+- Adjust `run_streamlit_app.sh` sleep duration if needed for Streamlit startup.
+- Customize crontab entries to fit your schedule.
 
+## Conclusion
 
-streamlit_script.py
-
-Purpose: Provides a web interface for data visualization and trend analysis.
-
-
-How it Works: Connects to the MongoDB database, retrieves the data, and uses Streamlit to create an interactive web application. It includes descriptive statistics, bar plots, box plots, and ARIMA forecasting.
-
-
-Visualization: Uses Matplotlib, Seaborn, and Statsmodels for plotting and forecasting.
-
-
-run_streamlit_app.sh
-
-Purpose: Launches the Streamlit web application and opens it in a web browser.
-
-
-How it Works: Sets the DISPLAY environment variable, runs the Streamlit app, and opens the app in Firefox.
-
-
-Crontab Entries
-
-Purpose: Schedules the execution of the scripts.
-
-
-Schedule:
-
-
-download_data.sh runs daily at 16:15.
-summary_to_mango_db.py runs daily at 16:17.
-run_streamlit_app.sh runs daily at 16:20 and logs output to cron.log.
-
-#Getting Started
-
-To use this project, follow these steps:
-
-
-Clone the Repository: Obtain all the scripts and place them in the appropriate directories on your machine.
-Set Permissions: Ensure the scripts are executable (chmod +x).
-Install Dependencies: Ensure you have curl, pandas, pymongo, streamlit, matplotlib, seaborn, statsmodels, and MongoDB installed.
-Run the Scripts: Execute the scripts either manually or let the crontab handle the scheduling.
-Access the Web Application: After run_streamlit_app.sh is executed, the Streamlit app will be available at http://localhost:8501.
-
-#Customization Instructions
-
-Script Paths and Browser Configuration:
-
-Before using the project, it's important to customize the paths and browser settings according to your local environment. Here are the steps you should follow:
-
-Script Paths: Update the paths in the scripts to match the directory structure of your machine. This includes changing the directory path in download_data.sh and summary_to_mango_db.py for where the retrieved data is stored, as well as the path to the streamlit_script.py in run_streamlit_app.sh.
-
-Browser Choice: The run_streamlit_app.sh script is configured to open the Streamlit app in Firefox. If you prefer a different browser, or if your default browser is not Firefox, replace the firefox command with the command for your preferred browser. For example, if you want to use Google Chrome, replace firefox with google-chrome.
-
-#Prerequisites
-
-A Unix-like operating system with a Bash-compatible shell.
-Python 3 with the aforementioned libraries installed.
-MongoDB installed and running on the default port (27017).
-Firefox web browser for viewing the Streamlit app.
-
-#Important Notes
-
-The API token in download_data.sh is for demonstration purposes. Replace it with your own valid token.
-Ensure MongoDB is properly set up and that the Python script has the necessary permissions to access and modify the database.
-Adjust the sleep duration in run_streamlit_app.sh if the Streamlit app takes longer to start.
-The crontab entries are set to run at specific times; adjust these times as needed for your use case.
-
-#Conclusion
-
-This project automates the retrieval and analysis of energy data, providing a streamlined process for gaining insights into energy trends. With the help of scheduled scripts and an interactive web application, users can easily visualize and forecast energy consumption and production patterns.
+This project simplifies energy data retrieval and analysis, facilitating the discovery of energy trends. With automated scripts and an interactive web application, visualizing and forecasting energy patterns is effortless. Dive into the data and enjoy your forecasting journey!

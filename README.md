@@ -4,12 +4,12 @@ Energy Data Analysis and Forecasting Tool
 Welcome to the Energy Data Analysis and Forecasting Tool project! This suite of scripts and applications is designed to automate the process of retrieving, summarizing, and analyzing energy consumption and production data, with a focus on providing insights through descriptive statistics and trend analysis.
 
 
-Overview
+#Overview
 
 The project consists of several components that work together to fetch data from an API, store it in a MongoDB database, and then analyze and visualize the data using a Streamlit web application.
 
 
-Components
+#Components
 
 download_data.sh
 
@@ -64,7 +64,7 @@ download_data.sh runs daily at 16:15.
 summary_to_mango_db.py runs daily at 16:17.
 run_streamlit_app.sh runs daily at 16:20 and logs output to cron.log.
 
-Getting Started
+#Getting Started
 
 To use this project, follow these steps:
 
@@ -75,7 +75,7 @@ Install Dependencies: Ensure you have curl, pandas, pymongo, streamlit, matplotl
 Run the Scripts: Execute the scripts either manually or let the crontab handle the scheduling.
 Access the Web Application: After run_streamlit_app.sh is executed, the Streamlit app will be available at http://localhost:8501.
 
-Customization Instructions
+#Customization Instructions
 
 Script Paths and Browser Configuration:
 
@@ -85,20 +85,20 @@ Script Paths: Update the paths in the scripts to match the directory structure o
 
 Browser Choice: The run_streamlit_app.sh script is configured to open the Streamlit app in Firefox. If you prefer a different browser, or if your default browser is not Firefox, replace the firefox command with the command for your preferred browser. For example, if you want to use Google Chrome, replace firefox with google-chrome.
 
-Prerequisites
+#Prerequisites
 
 A Unix-like operating system with a Bash-compatible shell.
 Python 3 with the aforementioned libraries installed.
 MongoDB installed and running on the default port (27017).
 Firefox web browser for viewing the Streamlit app.
 
-Important Notes
+#Important Notes
 
 The API token in download_data.sh is for demonstration purposes. Replace it with your own valid token.
 Ensure MongoDB is properly set up and that the Python script has the necessary permissions to access and modify the database.
 Adjust the sleep duration in run_streamlit_app.sh if the Streamlit app takes longer to start.
 The crontab entries are set to run at specific times; adjust these times as needed for your use case.
 
-Conclusion
+#Conclusion
 
 This project automates the retrieval and analysis of energy data, providing a streamlined process for gaining insights into energy trends. With the help of scheduled scripts and an interactive web application, users can easily visualize and forecast energy consumption and production patterns.

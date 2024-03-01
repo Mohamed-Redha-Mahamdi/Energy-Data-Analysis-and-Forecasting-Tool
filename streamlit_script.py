@@ -2,16 +2,19 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.seasonal import seasonal_decompose
 from pymongo import MongoClient
 import seaborn as sns
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+import plotly.express as px
 
 def load_data():
     # Create a connection to the MongoDB instance
     client = MongoClient('mongodb://localhost:27017/')  # replace with your MongoDB connection string if not local
 
     # Access the specific database and collection
-    db = client["your_database"]
-    collection = db["your_collection"]
+    db = client["mydatabase"]
+    collection = db["energy"]
 
     # Convert the collection to a DataFrame
     dt = pd.DataFrame(list(collection.find()))
@@ -31,10 +34,11 @@ def load_data():
 
     # Sort the data by 'datetime'
     dt = dt.sort_index()
-
+    dt.rename(columns={"powerConsumptionTotal": "ConsumptionTotal","powerProductionTotal": "ProductionTotal",
+                               "powerImportTotal": "ImportTotal", "powerExportTotal": "ExportTotal", "powerConsumptionBreakdown.nuclear": "nuclear", "powerConsumptionBreakdown.geothermal":   "geothermal",
+                               "powerConsumptionBreakdown.wind": "wind", "powerConsumptionBreakdown.gas": "gas",
+                               "powerConsumptionBreakdown.oil": "oil", "powerConsumptionBreakdown.solar": "solar"},inplace=True)
     return dt
-
-
 
 
 def main():
@@ -42,31 +46,18 @@ def main():
     st.markdown("## Total Power Overview")
     dt = load_data()
 
-    total_consumption = dt["powerConsumptionTotal"].sum()
-    total_production = dt["powerProductionTotal"].sum()
-    total_import = dt["powerImportTotal"].sum()
-    total_export = dt["powerExportTotal"].sum()
-
+    # Interactive Plotly Plot for Total Power Breakdown
     totals = pd.DataFrame({
         'Category': ['Consumption', 'Production', 'Import', 'Export'],
-        'Value': [total_consumption, total_production, total_import, total_export]
+        'Value': [dt["ConsumptionTotal"].sum(), dt["ProductionTotal"].sum(),
+                  dt["ImportTotal"].sum(), dt["ExportTotal"].sum()]
     })
-
-    # Plot the differences using a bar plot
-    # Total Power Breakdown
-    st.markdown("### Total Power Breakdown")
-    fig1, ax1 = plt.subplots()
-    sns.barplot(x='Category', y='Value', data=totals, palette=['blue', 'green', 'orange', 'red'], ax=ax1)
-    ax1.set_title('Difference in Total Power')
-    st.pyplot(fig1)
+    fig_totals = px.bar(totals, x='Category', y='Value', color='Category')
+    st.plotly_chart(fig_totals, use_container_width=True)
 
     # Get the descriptive statistics
     st.markdown("## Descriptive Statistics")
     statistics = dt.describe()
-    statistics.rename(columns={"powerConsumptionTotal": "ConsumptionTotal","powerProductionTotal": "ProductionTotal",
-                               "powerImportTotal": "ImportTotal", "powerExportTotal": "ExportTotal", "powerConsumptionBreakdown.nuclear": "nuclear", "powerConsumptionBreakdown.geothermal": "geothermal",
-                               "powerConsumptionBreakdown.wind": "wind", "powerConsumptionBreakdown.gas": "gas",
-                               "powerConsumptionBreakdown.oil": "oil", "powerConsumptionBreakdown.solar": "solar"},inplace=True)
 
     # Create a box plot for descriptive statistics
     fig2, ax2 = plt.subplots(figsize=(15, 10))
@@ -74,6 +65,20 @@ def main():
     ax2.set_title('Box Plot of Descriptive Statistics', fontsize=20)
     ax2.set_xticklabels(ax2.get_xticklabels(), rotation=45, ha='right', fontsize=12)
     st.pyplot(fig2)
+
+    # Correlation Heatmap
+    st.markdown("## Correlation Heatmap")
+    corr = dt.corr()
+    fig_heatmap = px.imshow(corr, text_auto=True)
+    st.plotly_chart(fig_heatmap, use_container_width=True)
+
+    # Time Series Decomposition Plot
+    st.markdown("## Time Series Decomposition")
+    series = dt['ConsumptionTotal']  # Replace with the appropriate column
+    result = seasonal_decompose(series, model='additive', period=24)  # Assuming hourly data with daily seasonality
+    fig_decompose = px.line(result.trend)  # Plotly figure for trend
+    st.plotly_chart(fig_decompose, use_container_width=True)
+
 
     # Sidebar for user inputs and navigation
     with st.sidebar:
@@ -88,19 +93,21 @@ def main():
     model = ARIMA(series, order=(p, d, q))
     model_fit = model.fit()
     pred = model_fit.forecast(steps=24)
-    # Create a time index for the next 24 hours
-    forecast_index = pd.date_range(start=dt.index[-1], periods=25, freq='h')[1:]
 
-    # Forecast Plot
-    st.markdown("## Forecast with the side panel")
-    fig3, ax3 = plt.subplots(figsize=(10, 6))
-    sns.lineplot(data=dt, x=dt.index, y=column, label='Actual', ax=ax3)
-    sns.lineplot(x=forecast_index, y=pred, label='Forecast', linestyle='--', ax=ax3)
-    ax3.set_title(f'Forecast of {column} for the Next 24 Hours')
-    st.pyplot(fig3)
+    # Forecast Plot with Plotly
+    forecast_index = pd.date_range(start=dt.index[-1], periods=25, freq='h')[1:]
+    fig_forecast = px.line(dt, x=dt.index, y=column, labels={'value': 'Power Consumption'})
+    fig_forecast.add_scatter(x=forecast_index, y=pred, mode='lines', name='Forecast')
+    st.plotly_chart(fig_forecast, use_container_width=True)
+
+    # Forecasting Metrics Display
+    actual_values = dt['ConsumptionTotal'][-24:]  # Replace with actual values
+    predicted_values = pred  # Replace with your predictions
+    mae = mean_absolute_error(actual_values, predicted_values)
+    rmse = mean_squared_error(actual_values, predicted_values, squared=False)
+    st.metric(label="Mean Absolute Error", value=mae)
+    st.metric(label="Root Mean Square Error", value=rmse)
 
 
 if __name__ == "__main__":
     main()
-
-
